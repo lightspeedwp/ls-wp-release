@@ -46,15 +46,15 @@ WordPress.org plugins use this SVN structure:
 
 ```
 my-plugin/
+├── assets/                  (directory listing images; top level, beside trunk/, never inside it)
+│   ├── icon-128x128.jpg
+│   ├── icon-256x256.jpg
+│   ├── screenshot-1.png
+│   ├── screenshot-2.png
+│   └── banner-772x250.jpg
 ├── trunk/
 │   ├── my-plugin.php
 │   ├── readme.txt
-│   ├── assets/
-│   │   ├── icon-128x128.jpg
-│   │   ├── icon-256x256.jpg
-│   │   ├── screenshot-1.png
-│   │   ├── screenshot-2.png
-│   │   └── banner-772x250.jpg
 │   ├── includes/
 │   │   └── ...
 │   └── blocks/
@@ -255,16 +255,16 @@ cd my-plugin-svn
 
 # 3. Verify structure exists
 ls -la
-# Should show: trunk/ tags/ branches/
+# Should show: assets/ branches/ tags/ trunk/
 
 # 4. Copy plugin files to trunk/
 cp -r ../my-plugin-github/* trunk/
 
-# 5. Add wordpress.org assets to assets/
-mkdir -p trunk/assets
-cp ../artwork/icon-128x128.png trunk/assets/
-cp ../artwork/banner-772x250.png trunk/assets/
-cp ../artwork/screenshot-*.png trunk/assets/
+# 5. Add wordpress.org assets to the top-level assets/ (beside trunk/, not inside it)
+mkdir -p assets
+cp ../artwork/icon-128x128.png assets/
+cp ../artwork/banner-772x250.png assets/
+cp ../artwork/screenshot-*.png assets/
 ```
 
 ### First-Time Theme Setup
@@ -369,11 +369,11 @@ cat trunk/readme.txt | grep "Stable tag"
 
 ### Step 4: Verify Assets
 
-For plugins, verify assets/:
+For plugins, verify the top-level assets/ directory (beside trunk/):
 
 ```bash
 # Check assets present
-ls trunk/assets/
+ls assets/
 # Should include:
 # - icon-128x128.png (or .jpg)
 # - icon-256x256.png (or .jpg)
@@ -455,7 +455,7 @@ svn update
 # 2. Verify dimensions: 772×250 pixels
 # 3. Verify file format: .jpg, .jpeg, or .png
 # 4. Re-add to SVN:
-svn add trunk/assets/banner-772x250.jpg
+svn add assets/banner-772x250.jpg
 svn commit -m "Add plugin banner"
 
 # 5. WordPress.org regenerates after ~1 hour
@@ -494,7 +494,7 @@ The [[release]] skill coordinates with this skill:
 - [x] SVN working copy updated (svn update)
 - [x] trunk/ files copied
 - [x] readme.txt updated with stable tag
-- [x] Assets in trunk/assets/
+- [x] Assets in top-level assets/ (beside trunk/)
 - [x] Changes reviewed (svn diff)
 
 ## Tag Creation

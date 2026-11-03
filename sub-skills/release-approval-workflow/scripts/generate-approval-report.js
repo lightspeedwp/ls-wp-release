@@ -477,9 +477,37 @@ class ApprovalReportGenerator {
   }
 
   /**
+   * Resolve the output path and refuse anything outside the current working
+   * directory, so --output cannot overwrite arbitrary files.
+   */
+  resolveOutputPath(outputFile) {
+    const resolved = path.resolve(outputFile);
+    const root = fs.realpathSync(process.cwd());
+    const parent = path.dirname(resolved);
+
+    if (!fs.existsSync(parent)) {
+      throw new Error(`Output directory does not exist: ${parent}`);
+    }
+
+    const target = path.join(fs.realpathSync(parent), path.basename(resolved));
+    const relative = path.relative(root, target);
+    if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+      throw new Error(`Output path must be inside the current working directory: ${outputFile}`);
+    }
+
+    if (fs.existsSync(target) && fs.statSync(target).isDirectory()) {
+      throw new Error(`Output path is a directory: ${outputFile}`);
+    }
+
+    return target;
+  }
+
+  /**
    * Generate and save report
    */
   generate() {
+    // Validate the destination before doing any work
+    const outputPath = this.outputFile ? this.resolveOutputPath(this.outputFile) : null;
     const approval = this.loadApprovalData();
     let report;
 
@@ -495,8 +523,8 @@ class ApprovalReportGenerator {
         report = this.generateMarkdownReport(approval);
     }
 
-    if (this.outputFile) {
-      fs.writeFileSync(this.outputFile, report);
+    if (outputPath) {
+      fs.writeFileSync(outputPath, report);
       console.log(`✅ Report generated: ${this.outputFile}`);
       console.log(`   Format: ${this.format}`);
       console.log(`   Size: ${(Buffer.byteLength(report) / 1024).toFixed(2)} KB`);
@@ -533,7 +561,7 @@ Usage: node generate-approval-report.js [options]
 Options:
   --version <version>       Release version (e.g., 2.1.0)
   --approval-id <id>        Approval ID (e.g., APR-2024-001)
-  --output <file>           Output file path (default: stdout)
+  --output <file>           Output file path, inside the current directory (default: stdout)
   --format <format>         Output format: markdown, json, html (default: markdown)
   --data-dir <dir>          Data directory for approval files (default: ./.approval-data)
   --help                    Show this help message
