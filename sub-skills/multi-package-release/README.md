@@ -78,6 +78,11 @@ node scripts/check-cross-dependencies.js --group blocks-and-theme --matrix
 
 ### 4. Execute Release
 
+> **Note:** the `lspeed` command used in the examples below is not included in this
+> repository. Treat those commands as illustrative of the intended workflow, not as
+> something you can run today. The scripts in `scripts/` (`validate-package-group.js`,
+> `check-cross-dependencies.js`) are the parts that exist.
+
 ```bash
 lspeed release --group blocks-and-theme --execute
 ```

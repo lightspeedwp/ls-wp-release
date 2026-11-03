@@ -109,34 +109,46 @@ Thanks to our contributors for this release:
 
 ### Step 3: Create Release Assets
 
+Required tools: `zip`, and `sha256sum` (Linux) or `shasum -a 256` (macOS). No image tools are needed.
+
+Build first (for example `npm run build`) so compiled output exists, then package only
+what users should receive. Do not ship development files such as `.git/`, `.github/`,
+`node_modules/`, source maps, tests, lockfiles or editor/OS files. If the project already
+keeps an exclusion list (for example `.distignore`), apply that list instead of the one below.
+
 #### For Plugins
 
 ```bash
-# Create distributable zip
+# Create distributable zip (excluding development files)
 mkdir -p release-assets
 cp -r plugin-files release-assets/plugin-name
 cd release-assets
-zip -r plugin-name-v1.2.4.zip plugin-name/
-sha256sum plugin-name-v1.2.4.zip > plugin-name-v1.2.4.zip.sha256
+zip -r plugin-name-v1.2.4.zip plugin-name/ \
+  -x "*/.git/*" "*/.github/*" "*/node_modules/*" "*/tests/*" \
+  -x "*.map" "*/.DS_Store" "*/package-lock.json" "*/composer.lock"
+sha256sum plugin-name-v1.2.4.zip > plugin-name-v1.2.4.zip.sha256   # macOS: shasum -a 256 ...
 
 # Create WordPress.org SVN structure
 mkdir -p wordpress-org-sync/tags/1.2.4
 cp -r plugin-files wordpress-org-sync/tags/1.2.4/
-# .svnignore patterns applied automatically
+# No .svnignore is applied automatically: remove the same development files from this copy.
+# See "Excluded Patterns" in the wordpress-org-auto-sync sub-skill for the list.
 ```
 
 #### For Themes
 
 ```bash
-# Create distributable zip
+# Create distributable zip (excluding development files)
 mkdir -p release-assets
 cp -r theme-files release-assets/theme-name
 cd release-assets
-zip -r theme-name-v1.2.4.zip theme-name/
-sha256sum theme-name-v1.2.4.zip > theme-name-v1.2.4.zip.sha256
+zip -r theme-name-v1.2.4.zip theme-name/ \
+  -x "*/.git/*" "*/.github/*" "*/node_modules/*" "*/tests/*" \
+  -x "*.map" "*/.DS_Store" "*/package-lock.json" "*/composer.lock"
+sha256sum theme-name-v1.2.4.zip > theme-name-v1.2.4.zip.sha256   # macOS: shasum -a 256 ...
 
-# Create WordPress.org-ready screenshot
-convert screenshot.png -resize 1200x900 screenshot-large.png
+# Check the theme screenshot (do not resize it: a different aspect ratio would distort it)
+file theme-name/screenshot.png   # should report the expected 1200 x 900 dimensions
 ```
 
 ### Step 4: Publish GitHub Release
@@ -174,7 +186,7 @@ Create `.github/release-notes-template.md`:
 All releases are signed and checksummed:
 
 \`\`\`bash
-sha256sum -c plugin-name-vX.Y.Z.zip.sha256
+sha256sum -c plugin-name-vX.Y.Z.zip.sha256      # macOS: shasum -a 256 -c plugin-name-vX.Y.Z.zip.sha256
 \`\`\`
 
 [DOWNLOAD_ALL_ASSETS]
