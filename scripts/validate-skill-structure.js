@@ -13,19 +13,19 @@ const requiredFiles = [
   'SKILL.md',
   'LICENSE',
   'agents/release-agent.md',
-  'skills/github-release/SKILL.md',
-  'skills/release-qa/SKILL.md',
-  'skills/release-handoff-generator/SKILL.md',
+  'sub-skills/github-release/SKILL.md',
+  'sub-skills/release-qa/SKILL.md',
+  'sub-skills/release-handoff-generator/SKILL.md',
   'prompts/release.prompt.md',
   'prompts/changelog.prompt.md',
 ];
 
 const requiredDirectories = [
   'agents',
-  'skills',
-  'skills/github-release',
-  'skills/release-qa',
-  'skills/release-handoff-generator',
+  'sub-skills',
+  'sub-skills/github-release',
+  'sub-skills/release-qa',
+  'sub-skills/release-handoff-generator',
   'prompts',
 ];
 
@@ -95,7 +95,7 @@ if (fs.existsSync(agentMd)) {
   const checks = [
     { name: 'Agent responsibilities', pattern: /^## Agent Role & Responsibilities/m },
     { name: 'Prerequisites', pattern: /^### Prerequisites/m },
-    { name: 'Release workflow', pattern: /^## Release Workflow/m },
+    { name: 'Release workflow', pattern: /^#{2,3} Release Workflow/m },
     { name: 'WordPress compliance', pattern: /^## WordPress\.org Compliance/m },
   ];
 
@@ -107,6 +107,45 @@ if (fs.existsSync(agentMd)) {
       hasErrors = true;
     }
   });
+}
+
+console.log('');
+
+// Check every bundled sub-skill declares a `name:` matching its directory
+console.log('🧩 Checking sub-skill frontmatter:');
+
+const subSkillsDir = path.join(__dirname, '..', 'sub-skills');
+if (fs.existsSync(subSkillsDir)) {
+  const subSkillNames = fs
+    .readdirSync(subSkillsDir)
+    .filter((entry) => fs.statSync(path.join(subSkillsDir, entry)).isDirectory())
+    .sort();
+
+  subSkillNames.forEach((dirName) => {
+    const skillFile = path.join(subSkillsDir, dirName, 'SKILL.md');
+    if (!fs.existsSync(skillFile)) {
+      console.error(`❌ sub-skills/${dirName}/ has no SKILL.md`);
+      hasErrors = true;
+      return;
+    }
+
+    const frontmatter = fs.readFileSync(skillFile, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    // [ \t] (not \s) so an empty `name:` cannot capture the following line
+    const nameMatch = frontmatter && frontmatter[1].match(/^name:[ \t]*(.+?)[ \t]*\r?$/m);
+    const declaredName = nameMatch && nameMatch[1].replace(/^(['"])(.*)\1$/, '$2');
+
+    if (!declaredName) {
+      console.error(`❌ sub-skills/${dirName}/SKILL.md has no frontmatter \`name:\``);
+      hasErrors = true;
+    } else if (declaredName !== dirName) {
+      console.error(`❌ sub-skills/${dirName}/SKILL.md name "${declaredName}" does not match its directory`);
+      hasErrors = true;
+    } else {
+      console.log(`✅ sub-skills/${dirName}`);
+    }
+  });
+
+  console.log(`ℹ️  ${subSkillNames.length} sub-skill directories found`);
 }
 
 console.log('');

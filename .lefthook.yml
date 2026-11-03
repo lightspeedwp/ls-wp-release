@@ -1,4 +1,5 @@
 ---
+# yamllint disable rule:line-length
 # Lefthook configuration for git hooks
 # Install: npm install -D lefthook && lefthook install
 # Uninstall: lefthook uninstall
@@ -17,12 +18,7 @@ pre-commit:
     markdown-lint:
       glob: "*.md"
       description: "🔍 Linting markdown files"
-      run: |
-        if command -v markdownlint &> /dev/null; then
-          markdownlint --config .markdownlint.json {staged_files}
-        else
-          echo "⚠️  markdownlint not installed (npm install -D markdownlint-cli)"
-        fi
+      run: npx --no-install markdownlint --config .markdownlint.json {staged_files}
       skip:
         - merge
         - rebase
@@ -37,14 +33,14 @@ pre-commit:
         - rebase
 
     yaml-lint:
-      glob: "*.yml *.yaml"
+      glob: "*.{yml,yaml}"
       description: "🔍 Validating YAML files"
       run: |
-        if command -v yamllint &> /dev/null; then
-          yamllint {staged_files}
-        else
-          echo "⚠️  yamllint not installed"
+        if ! command -v yamllint &> /dev/null; then
+          echo "❌ yamllint is not installed (pip install yamllint); YAML files were NOT linted"
+          exit 1
         fi
+        yamllint {staged_files}
       skip:
         - merge
         - rebase
@@ -55,36 +51,14 @@ pre-push:
   commands:
     tests:
       description: "🧪 Running tests"
-      run: |
-        if [ -f "package.json" ]; then
-          if grep -q '"test"' package.json; then
-            npm test
-          else
-            echo "⚠️  No npm test script found"
-          fi
-        elif [ -f "composer.json" ]; then
-          if grep -q '"test"' composer.json; then
-            composer test
-          else
-            echo "⚠️  No composer test script found"
-          fi
-        else
-          echo "ℹ️  No test script found"
-        fi
+      run: npm test
       skip:
         - merge
         - rebase
 
     lint:
       description: "✨ Running linters"
-      run: |
-        if [ -f "package.json" ]; then
-          if grep -q '"lint"' package.json; then
-            npm run lint
-          else
-            echo "⚠️  No npm lint script found"
-          fi
-        fi
+      run: npm run lint
       skip:
         - merge
         - rebase

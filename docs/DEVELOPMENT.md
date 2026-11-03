@@ -27,7 +27,14 @@ npm install
 This installs:
 - `lefthook` — Git hooks manager
 - `markdownlint-cli` — Markdown linting
-- `yamllint` — YAML validation
+- `semver` — used by the multi-package release helper scripts
+
+`yamllint` is a Python tool and is **not** an npm package. Install it separately
+(for example `pip install yamllint`). `npm run lint:yaml` and the YAML git hook
+fail if it is missing, rather than skipping the check.
+
+> `npm install` runs the `prepare` script, which runs `lefthook install` and
+> writes git hooks into this checkout.
 
 ### 2. Install Git Hooks
 
@@ -67,6 +74,7 @@ npm run lint              # Run all linters
 npm run validate:structure  # Check skill structure
 npm run validate:links    # Check internal links
 npm run docs:validate     # Run all documentation checks
+npm test                  # Run the validator fixture tests
 ```
 
 ### 4. Commit Changes
@@ -112,7 +120,7 @@ git push origin feature/your-feature
 ```
 
 The lefthook `pre-push` hook will run:
-- Tests (if applicable)
+- Tests (`npm test`)
 - Linters
 - Documentation validation
 
@@ -120,7 +128,7 @@ If any check fails, fix the issues and retry:
 
 ```bash
 npm run lint:fix  # Auto-fix markdown formatting
-git add .
+git add <the files you changed>
 git commit -m "chore: Fix linting issues"
 git push origin feature/your-feature
 ```
@@ -230,21 +238,22 @@ release/
 ├── .markdownlint.json                 # Markdown linter config
 ├── agents/
 │   └── release-agent.md               # Agent instructions
-├── skills/
+├── sub-skills/                        # 12 bundled sub-skills (core three shown)
 │   ├── github-release/
 │   │   └── SKILL.md
 │   ├── release-qa/
 │   │   └── SKILL.md
-│   └── release-handoff-generator/
-│       └── SKILL.md
+│   ├── release-handoff-generator/
+│   │   └── SKILL.md
+│   └── ...                            # each has its own SKILL.md
 ├── prompts/
 │   ├── release.prompt.md
 │   └── changelog.prompt.md
 ├── scripts/
 │   ├── validate-json.js
 │   ├── validate-skill-structure.js
-│   ├── validate-links.js
-│   └── validate-json.js
+│   └── validate-links.js
+├── tests/                             # Validator fixture tests (node --test)
 └── docs/
     └── DEVELOPMENT.md                 # This file
 ```
@@ -315,12 +324,17 @@ metadata:
 
 ## Testing
 
-This skill is documentation-based and does not have unit tests. Validation is done through:
+This skill is documentation-based. `npm test` runs `node --test tests/*.test.cjs`, which
+covers only the repository's own validators (JSON, links, skill structure and the
+`lint:yaml` script) against temporary fixtures. It does not test the release workflow.
+
+Validation is done through:
 
 1. **Linting** — Markdown, JSON, YAML syntax
-2. **Structure checks** — Required files and sections
-3. **Link validation** — Internal links are correct
-4. **Manual testing** — Run `/release --dry-run` on a WordPress project
+2. **Structure checks** — Required files, sections and sub-skill frontmatter
+3. **Link validation** — Relative file links resolve (external links and anchors are not checked)
+4. **Validator tests** — `npm test`
+5. **Manual testing** — Run `/release --dry-run` on a WordPress project
 
 ## Continuous Integration
 

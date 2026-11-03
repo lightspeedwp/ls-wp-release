@@ -2,6 +2,22 @@
 
 This directory contains test configurations and examples for release skill validation and WordPress block plugin/theme testing.
 
+## What actually runs in this repository
+
+`npm test` runs `node --test tests/*.test.cjs`. These are the only executable tests here:
+
+| File | Covers |
+| ---- | ------ |
+| `validate-json.test.cjs` | `scripts/validate-json.js` |
+| `validate-links.test.cjs` | `scripts/validate-links.js` |
+| `validate-skill-structure.test.cjs` | `scripts/validate-skill-structure.js` |
+| `lint-yaml.test.cjs` | the `lint:yaml` script in `package.json` (mock `yamllint`) |
+
+They use temporary fixtures, need no `npm install`, no network and no coverage tooling, and
+make no coverage claims. Everything below this section is **reference material for a
+downstream plugin or theme project** being released. The Jest, PHPUnit, Playwright, coverage
+and hook examples are not configured or run in this repository.
+
 ## Purpose
 
 The tests folder provides:
@@ -229,18 +245,22 @@ describe('theme.json', () => {
 
 ## Running Tests
 
+> The commands in this and the following sections describe a downstream project with
+> Jest, PHPUnit and Playwright configured. In this repository, `npm test` runs only the
+> validator fixture tests listed at the top of this file.
+
 ### Before Commit
 
 ```bash
 npm test
-# Runs pre-commit validation (via lefthook)
+# The project's own test script; lefthook only runs it if you add it to pre-commit
 ```
 
 ### Before Push
 
 ```bash
 npm test
-# Runs pre-push validation (via lefthook)
+# This repository's .lefthook.yml runs npm test on pre-push
 ```
 
 ### Manual Test Run
