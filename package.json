@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Comprehensive release management skill for WordPress block plugins and themes",
   "author": "LightSpeedWP Release Team",
-  "license": "GPL-2.0",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightspeedwp/ls-wp-release.git"
