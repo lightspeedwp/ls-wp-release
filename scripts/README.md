@@ -82,7 +82,8 @@ node scripts/validate-skill-structure.js skills/hook-configuration/
 
 ## Planned Scripts
 
-These scripts are planned and will be added:
+These scripts are planned and will be added. File names are the original plans. New scripts follow the
+script policy: TypeScript, never `.sh`.
 
 ### validate-plugin-header.php
 
@@ -232,6 +233,10 @@ pre-push:
 ```
 
 ## Creating New Scripts
+
+> **Script policy:** new scripts are TypeScript. Do not add shell (`.sh`) scripts. The JavaScript template below
+> shows the structure of the existing scripts. Existing JavaScript is not converted by this rule, and TypeScript
+> tooling is not set up in this repository yet.
 
 ### Script Template
 

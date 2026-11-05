@@ -74,6 +74,10 @@ my-plugin/
 
 ### Theme SVN Repository
 
+> **Unverified:** the theme SVN flow in this document (the `trunk/` and `tags/` layout, the
+> `themes.svn.wordpress.org` address and committing directly to SVN) has not been checked against current
+> WordPress.org theme directory documentation. Confirm it before you rely on it.
+
 WordPress.org themes use similar structure:
 
 ```
@@ -268,6 +272,9 @@ cp ../artwork/screenshot-*.png assets/
 ```
 
 ### First-Time Theme Setup
+
+> **Unverified:** this theme SVN flow has not been checked against current WordPress.org theme directory
+> documentation. See the note under "Theme SVN Repository".
 
 ```bash
 # 1. Get SVN repository URL
