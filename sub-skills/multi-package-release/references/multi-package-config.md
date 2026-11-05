@@ -2,6 +2,10 @@
 
 Complete reference for `.lightspeed/release-groups.json` configuration.
 
+> **Note:** the `lspeed` command mentioned in this reference is not included in this repository. Treat its
+> commands as illustrative of the intended workflow, not as something you can run today. The scripts in
+> `scripts/` (`validate-package-group.js`, `check-cross-dependencies.js`) are the parts that exist.
+
 ## File Location
 ```
 .lightspeed/

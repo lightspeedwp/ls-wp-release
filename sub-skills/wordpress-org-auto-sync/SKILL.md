@@ -108,6 +108,10 @@ The skill executes a 5-phase automated workflow:
 
 ### Theme Detection
 
+> **Unverified:** the theme SVN flow in this document (the `trunk/` and `tags/` layout, the
+> `themes.svn.wordpress.org` address and committing directly to SVN) has not been checked against current
+> WordPress.org theme directory documentation. Confirm it before you rely on it.
+
 ```bash
 # Theme detected by presence of:
 # 1. style.css or theme.json in repository root
@@ -465,6 +469,9 @@ svn commit -m "Update stable tag to X.Y.Z"
 ```
 
 ### Theme Sync Example
+
+> **Unverified:** this theme SVN flow has not been checked against current WordPress.org theme directory
+> documentation. The output below is illustrative.
 
 ```bash
 # 1. GitHub Release published: v1.0.0 (block theme)

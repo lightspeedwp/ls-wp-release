@@ -131,6 +131,8 @@ When validated and approved, the skill:
    - Creates backport PR if fixes were applied to main
    - Prepares next-cycle starting point
    - Logs release in audit trail
+   - Hands off to the changelog agent (`ls-wp-changelog`) once the release is evidenced complete
+     (see [Changelog Agent Handoff](#changelog-agent-handoff))
 
 ## Scope Parameters
 
@@ -184,6 +186,8 @@ When validated and approved, the skill:
 - **Never** publish incomplete changelogs (empty Unreleased section)
 - **Never** skip WordPress.org compliance checks for plugins/themes
 - **Never** expose secrets in release notes or commit messages
+- **Never** write shell (`.sh`) scripts; any new script this skill's agent writes is TypeScript
+  (existing JavaScript scripts stay as they are; converting them is a separate decision)
 - **Default** to read-only mode; require explicit confirmation for changes
 
 ## Integration with Sub-Skills
@@ -210,18 +214,50 @@ After release is published:
 - [ ] Release is logged in audit trail with timestamp
 - [ ] Develop branch is synced with main (no drift)
 - [ ] Next-cycle development can begin on develop branch
+- [ ] Changelog agent handoff sent with the four inputs below (only once the release is evidenced complete)
+
+## Changelog Agent Handoff
+
+When a release is evidenced complete, the release agent hands off to the changelog agent (`ls-wp-changelog`).
+Treat a release as complete only when the release PR is merged, the tag is pushed and the GitHub Release is
+published. Do not infer completion.
+
+The handoff carries four inputs:
+
+| Input | What it holds |
+| ----- | ------------- |
+| `version` | The released version, `X.Y.Z` |
+| `releaseIssue` | The issue that tracked the release (issue ID or URL) |
+| `prList` | The pull requests included in the release (links) |
+| `changelogPath` | The changelog file that holds the `## [X.Y.Z]` section |
+
+Rules:
+
+- If an input is not known, say it is unknown and why. Never invent an issue, a PR or a path.
+- The handoff is a request for the changelog agent to pick up the released entries. It does not publish, tag or
+  release anything.
+- What the changelog agent does with the handoff is defined in the `ls-wp-changelog` repository, not here.
+
+The handoff format is described in [release-handoff-generator](./sub-skills/release-handoff-generator/SKILL.md).
 
 ## References
 
-- [RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md) — detailed workflow
-- [RELEASE_WORDPRESS.md](./docs/RELEASE_WORDPRESS.md) — WordPress-specific guidelines
-- [VERSIONING.md](./docs/VERSIONING.md) — semantic versioning rules
-- [RELEASE_RUNBOOK_PATCH.md](./docs/RELEASE_RUNBOOK_PATCH.md) — patch release workflow
-- [RELEASE_RUNBOOK_MINOR.md](./docs/RELEASE_RUNBOOK_MINOR.md) — minor release workflow
-- [RELEASE_RUNBOOK_MAJOR.md](./docs/RELEASE_RUNBOOK_MAJOR.md) — major release workflow
-- [CHANGELOG_RULES.md](./docs/CHANGELOG_RULES.md) — changelog format and validation
+- [Release workflow](./agents/release-agent.md#release-workflow) — step-by-step workflow
+- [WordPress.org compliance](./agents/release-agent.md#wordpressorg-compliance) — WordPress-specific checklists
+- [Release scope determination](./prompts/release.prompt.md#release-scope-determination) — patch, minor and major rules
+- [changelog-management](./sub-skills/changelog-management/SKILL.md) — changelog format and validation
 - [WordPress Plugin Guidelines](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/) — wordpress.org plugin requirements
 - [WordPress Theme Guidelines](https://developer.wordpress.org/themes/releasing-your-theme/) — wordpress.org theme requirements
+
+### Documents that are referenced but not in this repository
+
+These files were linked from this page but do not exist, so the links were removed:
+`docs/RELEASE_PROCESS.md`, `docs/RELEASE_WORDPRESS.md`, `docs/VERSIONING.md`, `docs/CHANGELOG_RULES.md`,
+`docs/RELEASE_RUNBOOK_PATCH.md`, `docs/RELEASE_RUNBOOK_MINOR.md` and `docs/RELEASE_RUNBOOK_MAJOR.md`.
+
+The first four are covered by the existing sections linked above. No per-scope runbooks exist yet. Per-scope
+requirements are summarised under [Scope Rules](./agents/release-agent.md#scope-rules). Whether that is enough,
+or whether runbooks should be written, is an open decision.
 
 ## See Also
 

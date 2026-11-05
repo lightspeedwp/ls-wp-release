@@ -228,7 +228,7 @@ Validates theme.json (if block theme):
 - Proper template and templateParts organization
 - Color palette defined
 - Typography settings present
-- Responsive breakpoints
+- Responsive breakpoints (LightSpeed house rule, not a WordPress.org requirement)
 
 **Command to validate:**
 

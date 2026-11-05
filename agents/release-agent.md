@@ -60,6 +60,7 @@ The release agent acts as the authoritative release coordinator:
    - Creates backport PRs for hotfixes
    - Logs release in audit trail
    - Generates handoff documentation for next cycle
+   - Hands off to the changelog agent (`ls-wp-changelog`) once the release is evidenced complete
 
 ## Agent Instructions
 
@@ -173,7 +174,8 @@ svn add new-files
 svn ci -m "Version X.Y.Z"
 ```
 
-For themes, submit through wordpress.org theme directory or use SVN sync.
+For themes, submit through wordpress.org theme directory or use SVN sync. The theme SVN flow is
+unverified; see [wordpress-org-sync](../sub-skills/wordpress-org-sync/SKILL.md).
 
 #### Step 6: Post-Release Handoff
 
@@ -182,6 +184,28 @@ The agent generates:
 - Handoff notes for next maintainer
 - Suggestion for next-cycle starting point
 - Issues for follow-up work (docs, backports)
+- A handoff to the changelog agent (`ls-wp-changelog`), described below
+
+**Handoff to the changelog agent.** Send this only when the release is evidenced complete: the release PR is
+merged, the tag is pushed and the GitHub Release is published. Do not infer completion. The handoff carries
+four inputs:
+
+```text
+Changelog agent handoff (example values)
+- version: 1.2.4
+- release issue: the issue that tracked the release (ID or URL)
+- PR list: links to the PRs included in the release
+- changelog path: CHANGELOG.md
+```
+
+- If an input is not known, write "unknown" and say why. Never invent an issue, a PR or a path.
+- The handoff does not publish, tag or release anything.
+- What the changelog agent does with it is defined in the `ls-wp-changelog` repository.
+
+### Script Policy
+
+- Never write shell (`.sh`) scripts. Any new script the agent writes is TypeScript.
+- Existing JavaScript scripts stay as they are. Converting them is a separate decision.
 
 ### Scope Rules
 
@@ -298,8 +322,8 @@ Before release, agent verifies:
 - [ ] `theme.json` (block themes):
   - Valid JSON structure
   - Defines color palette, typography, spacing
-  - Supports light and dark modes
-  - Responsive breakpoints defined
+  - Supports light and dark modes (LightSpeed house rule, not a WordPress.org requirement)
+  - Responsive breakpoints defined (LightSpeed house rule, not a WordPress.org requirement)
 
 - [ ] Theme assets:
   - `screenshot.png` (1200×900px, displays theme in action)
@@ -331,7 +355,7 @@ Pre-release gates:
 
 Recommendations:
   1. Fix failing tests: npm test -- --watch
-  2. Commit fixes: git add -A && git commit -m "fix: failing tests"
+  2. Commit fixes: git add <the files you fixed> && git commit -m "fix: failing tests"
   3. Retry release: /release --dry-run
 ```
 
@@ -347,7 +371,7 @@ Recommendations:
 
 Fix:
   1. Update plugin header: edit *.php, set Version: 1.2.3
-  2. Commit: git add -A && git commit -m "chore: sync versions"
+  2. Commit: git add <the file you edited> && git commit -m "chore: sync versions"
   3. Retry: /release --dry-run
 ```
 
@@ -430,8 +454,10 @@ Every release is logged to `.github/RELEASE_AUDIT_LOG.json`:
 
 ## References
 
-- [RELEASE_PROCESS.md](../docs/RELEASE_PROCESS.md) — step-by-step workflow
-- [RELEASE_WORDPRESS.md](../docs/RELEASE_WORDPRESS.md) — WordPress-specific details
+- [Release Workflow](#release-workflow) — step-by-step workflow, in this document
+- [Release orchestration prompt](../prompts/release.prompt.md) — version, changelog and git detail
+- [WordPress.org Compliance](#wordpressorg-compliance) — WordPress-specific checklists, in this document
+- [wordpress-org-sync](../sub-skills/wordpress-org-sync/SKILL.md) — WordPress.org SVN preparation
 - [Semantic Versioning](https://semver.org/) — version numbering standard
 - [Keep a Changelog](https://keepachangelog.com/) — changelog format
 - [WordPress Plugin Guidelines](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/)
