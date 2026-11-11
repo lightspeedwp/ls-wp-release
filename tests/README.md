@@ -13,12 +13,23 @@ This directory contains test configurations and examples for release skill valid
 | `validate-skill-structure.test.cjs` | `scripts/validate-skill-structure.js` |
 | `lint-yaml.test.cjs` | the `lint:yaml` script in `package.json` (mock `yamllint`) |
 | `helper-scripts.test.cjs` | `audit-log-approval.js`, `generate-approval-report.js` and `validate-package-group.js` |
+| `validators.inprocess.test.cjs` | `validate-json.js`, `validate-links.js` and `validate-skill-structure.js`, in-process |
+| `svn-sync-validator.inprocess.test.cjs` | `svn-sync-validator.js`, in-process |
+| `check-cross-dependencies.inprocess.test.cjs` | `check-cross-dependencies.js`, in-process |
+| `validate-package-group.inprocess.test.cjs` | `validate-package-group.js`, in-process |
+| `audit-log-approval.inprocess.test.cjs` | `audit-log-approval.js`, in-process |
+| `generate-approval-report.inprocess.test.cjs` | `generate-approval-report.js`, in-process |
+| `release-notes-parse-format.inprocess.test.cjs` | `parse-changelog.js` and `format-release-notes.js`, in-process |
+| `extract-contributors.inprocess.test.cjs` | `extract-contributors.js`, in-process |
+
+The `*.inprocess.test.cjs` files (listed below) load each real script with `require()`, so V8
+coverage can see it. The older files run copies of the scripts as subprocesses, which V8
+cannot see, so they check behaviour but add no coverage.
 
 They use temporary fixtures and need `npm install` (Node 22.12 or newer, for Vitest) but no
 network. `npm test` reports coverage (text, `json-summary` and `lcov` in `coverage/`) and
-enforces no threshold yet. The agreed starting point is 80%, to raise toward 90% over time.
-Most scripts run as subprocesses in these tests, which V8 coverage cannot see, so the
-reported figure is low. The gate is enabled once the scripts are tested in-process.
+fails if global statements, branches, functions or lines fall below **80%**. That is the
+agreed starting point; raise it toward 90% in `vitest.config.ts` as the tests improve.
 Everything below this section is **reference material for a downstream plugin or theme
 project** being released. The Jest, PHPUnit, Playwright, coverage and hook examples are
 not configured or run in this repository.
