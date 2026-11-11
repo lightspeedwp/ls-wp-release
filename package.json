@@ -9,7 +9,10 @@
     "url": "https://github.com/lightspeedwp/ls-wp-release.git"
   },
   "scripts": {
-    "test": "node --test tests/*.test.cjs",
+    "test": "npm run test:vitest",
+    "test:vitest": "vitest run --coverage --configLoader runner",
+    "test:unit": "vitest run --configLoader runner",
+    "test:watch": "vitest --configLoader runner",
     "lint": "npm run lint:markdown && npm run lint:json && npm run lint:yaml",
     "lint:markdown": "markdownlint '*.md' 'agents/**/*.md' 'sub-skills/**/*.md' 'prompts/**/*.md' --config .markdownlint.json",
     "lint:json": "node scripts/validate-json.js",
@@ -25,11 +28,13 @@
     "semver": "^7.5.4"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "5.1.0",
     "lefthook": "^1.5.0",
-    "markdownlint-cli": "^0.35.0"
+    "markdownlint-cli": "^0.35.0",
+    "vitest": "5.1.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.12.0"
   },
   "keywords": [
     "wordpress",
