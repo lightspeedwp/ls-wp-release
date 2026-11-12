@@ -11,7 +11,7 @@ This document covers setup, development workflow, and validation for the LightSp
 
 ## Prerequisites
 
-- Node.js 22.12+ (required by Vitest; for development tools)
+- Node.js 22.12 or newer 22.x, 24.x, or 26 and later (the range Vitest 5.1.0 supports; Node 23 and 25 are not supported)
 - Git (for version control and hooks)
 - Lefthook (installed automatically via npm)
 
@@ -406,7 +406,7 @@ npm run lint
 
 ### Validation succeeds locally but fails in CI
 
-1. Check you're using the same Node.js version (18+)
+1. Check you're using a supported Node.js version (22.12+, 24.x or 26+; see Prerequisites)
 2. Run `npm install` again to ensure dependencies are current
 3. Check that all files are committed (`git status`)
 4. Look for environment-specific issues (line endings, etc)

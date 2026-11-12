@@ -78,3 +78,65 @@ test('zero YAML files is reported as nothing linted, not as a pass', () => {
   assert.strictEqual(result.status, 0);
   assert.match(result.stdout, /nothing was linted/);
 });
+
+// ---- The real pre-commit `yaml-lint` hook command from .lefthook.yml ----
+// The hook runs through `sh`, which is dash on many Linux systems, so it must stay POSIX.
+// The command is extracted from the file and run against a mock `yamllint` on an empty PATH.
+
+function readHookCommand() {
+  const lines = fs.readFileSync(path.join(__dirname, '..', '.lefthook.yml'), 'utf8').split('\n');
+  const start = lines.findIndex((line) => /^ {4}yaml-lint:/.test(line));
+  assert.ok(start >= 0, 'yaml-lint hook not found in .lefthook.yml');
+  const runAt = lines.findIndex((line, i) => i > start && /^ {6}run: \|/.test(line));
+  assert.ok(runAt > start, 'yaml-lint run block not found');
+  const body = [];
+  for (let i = runAt + 1; i < lines.length && /^ {8}/.test(lines[i]); i += 1) {
+    body.push(lines[i].slice(8));
+  }
+  return body.join('\n').replace('{staged_files}', 'sample.yml');
+}
+
+// dash is used when the host has it; otherwise /bin/sh. The static check below covers bash-only syntax.
+function posixShell() {
+  const dash = spawnSync('sh', ['-c', 'command -v dash'], { encoding: 'utf8' }).stdout.trim();
+  return dash || '/bin/sh';
+}
+
+function runHook(mock) {
+  const project = tempDir('ls-wp-release-hook-');
+  const bin = tempDir('ls-wp-release-hookbin-');
+  if (mock !== undefined) {
+    const mockPath = path.join(bin, 'yamllint');
+    fs.writeFileSync(mockPath, `#!/bin/sh\n${mock}\n`);
+    fs.chmodSync(mockPath, 0o755);
+  }
+  return spawnSync(posixShell(), ['-c', readHookCommand()], {
+    cwd: project,
+    env: { HOME: project, PATH: bin },
+    encoding: 'utf8',
+  });
+}
+
+test('yaml-lint hook command uses no bash-only redirection', () => {
+  assert.doesNotMatch(readHookCommand(), /&>/);
+});
+
+test('yaml-lint hook runs yamllint when it is installed', () => {
+  const result = runHook('echo "mock-yamllint ran with: $*"; exit 0');
+  assert.strictEqual(result.status, 0);
+  assert.match(result.stdout, /mock-yamllint ran with: sample\.yml/);
+  assert.doesNotMatch(result.stdout + result.stderr, /not installed/);
+});
+
+test('yaml-lint hook blocks the commit when yamllint is missing', () => {
+  const result = runHook(undefined);
+  assert.strictEqual(result.status, 1);
+  assert.match(result.stdout, /yamllint is not installed/);
+});
+
+test('yaml-lint hook keeps the yamllint failure status and output', () => {
+  const result = runHook('echo "mock-yamllint: bad indentation" >&2; exit 1');
+  assert.strictEqual(result.status, 1);
+  assert.match(result.stderr, /mock-yamllint: bad indentation/);
+  assert.doesNotMatch(result.stdout, /not installed/);
+});
