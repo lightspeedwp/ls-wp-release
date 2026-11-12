@@ -45,6 +45,14 @@ pre-commit:
         - merge
         - rebase
 
+    vitest-tests:
+      glob: "*.{js,cjs,mjs,ts}"
+      description: "🧪 Running Vitest tests (single run)"
+      run: npm run test:vitest --silent
+      skip:
+        - merge
+        - rebase
+
 # Pre-push hooks: run before git push
 pre-push:
   parallel: false
@@ -90,7 +98,7 @@ commit-msg:
         # Format: type(scope): subject
         # Types: feat, fix, docs, style, refactor, perf, test, chore
 
-        commit_msg=$(cat $1)
+        commit_msg=$(cat "{1}")
 
         # Skip merge/rebase commits
         if [[ "$commit_msg" =~ ^Merge|^Rebase ]]; then
@@ -136,11 +144,3 @@ post-merge:
         if git diff HEAD@{1} -- package-lock.json composer.lock 2>/dev/null | grep -q .; then
           echo "⚠️  Dependencies changed. Consider running: npm install or composer install"
         fi
-
-# Hooks configuration
-hooks:
-  # Enable colorized output
-  colors: true
-
-  # Decorate output
-  verbose: false

@@ -11,7 +11,7 @@ This document covers setup, development workflow, and validation for the LightSp
 
 ## Prerequisites
 
-- Node.js 18+ (for development tools)
+- Node.js 22.12 or newer 22.x, 24.x, or 26 and later (the range Vitest 5.1.0 supports; Node 23 and 25 are not supported)
 - Git (for version control and hooks)
 - Lefthook (installed automatically via npm)
 
@@ -27,6 +27,7 @@ npm install
 This installs:
 - `lefthook` — Git hooks manager
 - `markdownlint-cli` — Markdown linting
+- `vitest` and `@vitest/coverage-v8` — test runner and coverage (kept on the same version)
 - `semver` — used by the multi-package release helper scripts
 
 `yamllint` is a Python tool and is **not** an npm package. Install it separately
@@ -253,7 +254,7 @@ release/
 │   ├── validate-json.js
 │   ├── validate-skill-structure.js
 │   └── validate-links.js
-├── tests/                             # Validator fixture tests (node --test)
+├── tests/                             # Validator fixture tests (Vitest)
 └── docs/
     └── DEVELOPMENT.md                 # This file
 ```
@@ -333,9 +334,12 @@ See [scripts/README.md](../scripts/README.md) for the existing scripts.
 
 ## Testing
 
-This skill is documentation-based. `npm test` runs `node --test tests/*.test.cjs`, which
-covers only the repository's own validators (JSON, links, skill structure and the
-`lint:yaml` script) against temporary fixtures. It does not test the release workflow.
+This skill is documentation-based. `npm test` runs Vitest (`vitest run --coverage`) over
+`tests/*.test.cjs`, which covers only the repository's own validators (JSON, links, skill
+structure and the `lint:yaml` script) and three helper scripts against temporary fixtures.
+It does not test the release workflow. Coverage is reported (text, `json-summary` and
+`lcov` in `coverage/`) but no threshold is enforced yet. Most scripts run as subprocesses
+in the tests, so the reported coverage is low.
 
 Validation is done through:
 
@@ -402,7 +406,7 @@ npm run lint
 
 ### Validation succeeds locally but fails in CI
 
-1. Check you're using the same Node.js version (18+)
+1. Check you're using a supported Node.js version (22.12+, 24.x or 26+; see Prerequisites)
 2. Run `npm install` again to ensure dependencies are current
 3. Check that all files are committed (`git status`)
 4. Look for environment-specific issues (line endings, etc)

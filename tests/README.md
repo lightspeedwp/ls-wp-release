@@ -4,7 +4,7 @@ This directory contains test configurations and examples for release skill valid
 
 ## What actually runs in this repository
 
-`npm test` runs `node --test tests/*.test.cjs`. These are the only executable tests here:
+`npm test` runs Vitest (`vitest run --coverage`) over `tests/*.test.cjs`. These are the only executable tests here:
 
 | File | Covers |
 | ---- | ------ |
@@ -12,11 +12,16 @@ This directory contains test configurations and examples for release skill valid
 | `validate-links.test.cjs` | `scripts/validate-links.js` |
 | `validate-skill-structure.test.cjs` | `scripts/validate-skill-structure.js` |
 | `lint-yaml.test.cjs` | the `lint:yaml` script in `package.json` (mock `yamllint`) |
+| `helper-scripts.test.cjs` | `audit-log-approval.js`, `generate-approval-report.js` and `validate-package-group.js` |
 
-They use temporary fixtures, need no `npm install`, no network and no coverage tooling, and
-make no coverage claims. Everything below this section is **reference material for a
-downstream plugin or theme project** being released. The Jest, PHPUnit, Playwright, coverage
-and hook examples are not configured or run in this repository.
+They use temporary fixtures and need `npm install` (Node 22.12 or newer 22.x, 24.x or 26+, the range
+Vitest supports) but no network. `npm test` reports coverage (text, `json-summary` and `lcov` in `coverage/`) and
+enforces no threshold yet. The agreed starting point is 80%, to raise toward 90% over time.
+Most scripts run as subprocesses in these tests, which V8 coverage cannot see, so the
+reported figure is low. The gate is enabled once the scripts are tested in-process.
+Everything below this section is **reference material for a downstream plugin or theme
+project** being released. The Jest, PHPUnit, Playwright, coverage and hook examples are
+not configured or run in this repository.
 
 ## Purpose
 
