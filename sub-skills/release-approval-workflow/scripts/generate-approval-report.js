@@ -495,11 +495,40 @@ class ApprovalReportGenerator {
       throw new Error(`Output path must be inside the current working directory: ${outputFile}`);
     }
 
-    if (fs.existsSync(target) && fs.statSync(target).isDirectory()) {
+    // lstat does not follow links, so a symlink (including a dangling one) is seen as a link
+    let targetStat = null;
+    try {
+      targetStat = fs.lstatSync(target);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
+
+    if (targetStat && targetStat.isSymbolicLink()) {
+      throw new Error(`Output path must not be a symbolic link: ${outputFile}`);
+    }
+
+    if (targetStat && targetStat.isDirectory()) {
       throw new Error(`Output path is a directory: ${outputFile}`);
     }
 
     return target;
+  }
+
+  /**
+   * Write the report without following a link that replaced the path after the check.
+   * O_NOFOLLOW makes the open fail if the final component is a symlink (not available on Windows).
+   */
+  writeReportFile(outputPath, report) {
+    const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC |
+      (fs.constants.O_NOFOLLOW || 0);
+    const fd = fs.openSync(outputPath, flags, 0o644);
+    try {
+      fs.writeFileSync(fd, report);
+    } finally {
+      fs.closeSync(fd);
+    }
   }
 
   /**
@@ -524,7 +553,7 @@ class ApprovalReportGenerator {
     }
 
     if (outputPath) {
-      fs.writeFileSync(outputPath, report);
+      this.writeReportFile(outputPath, report);
       console.log(`✅ Report generated: ${this.outputFile}`);
       console.log(`   Format: ${this.format}`);
       console.log(`   Size: ${(Buffer.byteLength(report) / 1024).toFixed(2)} KB`);
