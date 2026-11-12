@@ -4,7 +4,7 @@
 // The script is copied into a temporary project and run network-free from an
 // unrelated working directory with an empty PATH.
 
-const { test, after } = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -51,7 +51,8 @@ function snapshot(dir, base = dir) {
     .sort();
 }
 
-after(() => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
+// process.on('exit') keeps this compatible with Node 18.0 (node:test after() needs 18.8).
+process.on('exit', () => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
 
 test('relative links to existing files resolve', () => {
   const root = makeProject({

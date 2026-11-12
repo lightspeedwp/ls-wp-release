@@ -4,12 +4,13 @@
 // --output must stay inside the working directory, and git arguments must never
 // reach a shell. Everything runs in temporary directories using Node's built-in runner.
 
-const { test, after } = require('node:test');
+const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { initFixtureRepo, runGit, withIsolatedGitEnv } = require('./helpers/isolated-git.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const AUDIT = path.join(ROOT, 'sub-skills/release-approval-workflow/scripts/audit-log-approval.js');
@@ -43,7 +44,8 @@ function snapshot(dir, base = dir) {
     .sort();
 }
 
-after(() => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
+// process.on('exit') keeps this compatible with Node 18.0 (node:test after() needs 18.8).
+process.on('exit', () => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
 
 // --- audit-log-approval.js -------------------------------------------------
 
@@ -132,6 +134,38 @@ test('approval report: --output into a missing directory or onto a directory is 
   assert.match(dir.stderr, /is a directory/);
 });
 
+test('approval report: an output symlink to an external file is refused and the target is unchanged', () => {
+  const cwd = reportProject();
+  const elsewhere = tempDir('ls-wp-release-elsewhere-');
+  const external = path.join(elsewhere, 'precious.txt');
+  fs.writeFileSync(external, 'keep me');
+  fs.symlinkSync(external, path.join(cwd, 'link.json'));
+  const result = node(REPORT, ['--version', '1.0.0', '--format', 'json', '--output', 'link.json'], cwd);
+  assert.strictEqual(result.status, 1);
+  assert.match(result.stderr, /must not be a symbolic link/);
+  assert.strictEqual(fs.readFileSync(external, 'utf8'), 'keep me');
+});
+
+test('approval report: a dangling output symlink is refused and no external file is created', () => {
+  const cwd = reportProject();
+  const elsewhere = tempDir('ls-wp-release-elsewhere-');
+  const missing = path.join(elsewhere, 'created-by-attack.txt');
+  fs.symlinkSync(missing, path.join(cwd, 'dangling.json'));
+  const result = node(REPORT, ['--version', '1.0.0', '--format', 'json', '--output', 'dangling.json'], cwd);
+  assert.strictEqual(result.status, 1);
+  assert.match(result.stderr, /must not be a symbolic link/);
+  assert.ok(!fs.existsSync(missing), 'the report was written through the dangling link');
+});
+
+test('approval report: an output symlink to a file inside the working directory is also refused', () => {
+  const cwd = reportProject();
+  fs.writeFileSync(path.join(cwd, 'real.json'), 'original');
+  fs.symlinkSync(path.join(cwd, 'real.json'), path.join(cwd, 'alias.json'));
+  const result = node(REPORT, ['--version', '1.0.0', '--format', 'json', '--output', 'alias.json'], cwd);
+  assert.strictEqual(result.status, 1);
+  assert.strictEqual(fs.readFileSync(path.join(cwd, 'real.json'), 'utf8'), 'original');
+});
+
 test('approval report: without --output the report goes to stdout and nothing is written', () => {
   const cwd = reportProject();
   const before = snapshot(cwd);
@@ -145,30 +179,59 @@ test('approval report: without --output the report goes to stdout and nothing is
 
 test('package group: git arguments are never interpreted by a shell', () => {
   const repo = tempDir('ls-wp-release-group-');
-  const git = (args) => spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
-  assert.strictEqual(git(['init', '-q']).status, 0, 'git is required for this test');
-  git(['-c', 'user.name=t', '-c', 'user.email=t@example.com', 'commit', '-q', '--allow-empty', '-m', 'init']);
+  const home = tempDir('ls-wp-release-home-');
+  initFixtureRepo(repo, home);
 
-  const GroupValidator = require(GROUP);
-  const validator = new GroupValidator({});
+  withIsolatedGitEnv(home, () => {
+    const GroupValidator = require(GROUP);
+    const validator = new GroupValidator({});
 
-  // The command substitution would create the marker file if a shell ran it.
-  const marker = path.join(repo, 'PWNED');
+    // The command substitution would create the marker file if a shell ran it.
+    const marker = path.join(repo, 'PWNED');
+    assert.throws(() => validator.execGit(['log', `--format=$(touch ${marker})`], repo), /Git command failed/);
+    assert.ok(!fs.existsSync(marker), 'a shell executed part of the git arguments');
+
+    // Normal use, including a working directory with a space, still works.
+    const spaced = path.join(repo, 'dir with space');
+    fs.mkdirSync(spaced);
+    assert.strictEqual(validator.execGit(['rev-parse', '--is-inside-work-tree'], spaced).trim(), 'true');
+  });
+});
+
+test('git fixtures ignore a hostile caller environment and never touch the caller repository', () => {
+  const decoy = tempDir('ls-wp-release-decoy-');
+  const decoyHome = tempDir('ls-wp-release-decoyhome-');
+  const repo = tempDir('ls-wp-release-fixture-');
+  const home = tempDir('ls-wp-release-home-');
+  runGit(['init', '-q'], decoy, decoyHome);
+  const before = snapshot(path.join(decoy, '.git'));
+  const saved = { GIT_DIR: process.env.GIT_DIR, GIT_WORK_TREE: process.env.GIT_WORK_TREE };
+  process.env.GIT_DIR = path.join(decoy, '.git');
+  process.env.GIT_WORK_TREE = decoy;
   try {
-    validator.execGit(['log', `--format=$(touch ${marker})`], repo);
-  } catch (err) {
-    assert.match(err.message, /Git command failed/);
+    initFixtureRepo(repo, home);
+    withIsolatedGitEnv(home, () => {
+      const GroupValidator = require(GROUP);
+      assert.strictEqual(new GroupValidator({}).execGit(['rev-parse', '--show-toplevel'], repo).trim(), repo);
+    });
+  } finally {
+    Object.entries(saved).forEach(([name, value]) => {
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    });
   }
-  assert.ok(!fs.existsSync(marker), 'a shell executed part of the git arguments');
-
-  // Normal use, including a working directory with a space, still works.
-  const spaced = path.join(repo, 'dir with space');
-  fs.mkdirSync(spaced);
-  assert.strictEqual(validator.execGit(['rev-parse', '--is-inside-work-tree'], spaced).trim(), 'true');
+  assert.ok(fs.existsSync(path.join(repo, '.git')), 'the fixture repository was not created in its own directory');
+  assert.deepStrictEqual(snapshot(path.join(decoy, '.git')), before, 'the caller repository was modified');
 });
 
 test('package group: a failing git command still reports "Git command failed"', () => {
   const dir = tempDir('ls-wp-release-group-');
-  const GroupValidator = require(GROUP);
-  assert.throws(() => new GroupValidator({}).execGit(['status'], dir), /Git command failed: git status/);
+  const home = tempDir('ls-wp-release-home-');
+  withIsolatedGitEnv(home, () => {
+    const GroupValidator = require(GROUP);
+    assert.throws(() => new GroupValidator({}).execGit(['status'], dir), /Git command failed: git status/);
+  });
 });
