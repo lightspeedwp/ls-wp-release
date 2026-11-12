@@ -131,8 +131,10 @@ sha256sum plugin-name-v1.2.4.zip > plugin-name-v1.2.4.zip.sha256   # macOS: shas
 # Create WordPress.org SVN structure
 mkdir -p wordpress-org-sync/tags/1.2.4
 cp -r plugin-files wordpress-org-sync/tags/1.2.4/
-# No .svnignore is applied automatically: remove the same development files from this copy.
-# See "Excluded Patterns" in the wordpress-org-auto-sync sub-skill for the list.
+# No .svnignore is applied automatically: copy only the distributable files, using the project's
+# own manifest (for example .distignore) as the source of truth.
+# Keep runtime files, such as built blocks in build/ or production Composer dependencies in vendor/.
+# Remove only development-only files: .git, .github, node_modules, tests, source maps and lock files.
 ```
 
 #### For Themes

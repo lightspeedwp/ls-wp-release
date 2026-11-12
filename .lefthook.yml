@@ -36,7 +36,7 @@ pre-commit:
       glob: "*.{yml,yaml}"
       description: "🔍 Validating YAML files"
       run: |
-        if ! command -v yamllint &> /dev/null; then
+        if ! command -v yamllint >/dev/null 2>&1; then
           echo "❌ yamllint is not installed (pip install yamllint); YAML files were NOT linted"
           exit 1
         fi
