@@ -611,6 +611,20 @@ pre-commit:
       run: npm run validate:changelog
 ```
 
+## Source Pack Notes
+
+The `lightspeed-release-ops` plugin pack (`lightspeedwp/.github`, `plugins/lightspeed-release-ops`, commit
+`47aee07`, GPL-3.0) has two stub skills that overlap with this one. Each stub is a heading and one sentence.
+Their descriptions are recorded here so nothing is lost:
+
+- `lightspeed-changelog-compliance`: "validate changelog completeness and semantic-release alignment before release
+  handoff." This skill validates Keep a Changelog format compliance and catches incomplete entries. It does not
+  cover semantic-release alignment. The term is not used anywhere else in this repository.
+- `lightspeed-version-bump-planner`: "plan semantic version bump recommendations from change scope and release
+  policy signals." This skill determines the version type from commit analysis (see Preparing for Release).
+
+See [the review](../../docs/RELEASE_OPS_SKILLS_REVIEW.md) for the full comparison.
+
 ## See Also
 
 - [[release]] — main release skill with changelog integration

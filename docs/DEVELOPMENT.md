@@ -232,7 +232,7 @@ Required files for the release skill:
 release/
 ├── README.md                          # Quick start guide
 ├── SKILL.md                           # Skill specification
-├── LICENSE                            # GPL-2.0 license
+├── LICENSE                            # GPL-3.0 license
 ├── package.json                       # npm configuration
 ├── .lefthook.yml                      # Git hooks configuration
 ├── .markdownlint.json                 # Markdown linter config
