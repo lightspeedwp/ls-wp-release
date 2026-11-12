@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-// One Vitest run covers the repository's validator and helper-script tests.
+// One Vitest run covers the repository's validator and script tests, with an 80% global coverage gate.
 // The tests keep their node:assert assertions; Vitest provides the test() and afterAll() globals.
 export default defineConfig({
   test: {
@@ -13,10 +13,16 @@ export default defineConfig({
       // Every intended production script is in the denominator, whether or not a test runs it.
       include: ['scripts/**/*.{cjs,mjs,js,ts}', 'sub-skills/**/scripts/**/*.{cjs,mjs,js,ts}'],
       // Test files only; no production script is excluded.
-      exclude: ['**/tests/**']
-      // No threshold is enforced yet. The agreed starting point is 80% (raise toward 90% over time).
-      // The tests run most scripts as subprocesses, which V8 cannot instrument, so the gate is enabled
-      // in a follow-up once the scripts are tested in-process.
+      exclude: ['**/tests/**'],
+      // Global gate: `npm test` fails below 80%. This is the agreed starting point; raise it toward 90% over time.
+      // The *.inprocess.test.cjs files load the real scripts with require() so V8 can see them. The older
+      // subprocess tests run copies of the scripts and add no coverage.
+      thresholds: {
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80
+      }
     }
   }
 });
