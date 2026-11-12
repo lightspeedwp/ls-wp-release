@@ -7,6 +7,8 @@
  * group resolution, group/package config validation, version extraction (plugin, theme, JSON),
  * semver and constraint checks, dependency validation, breaking change detection, git state checks
  * (against throwaway temp repos and a stubbed execGit), env-var option defaults and the report output.
+ * Git fixtures and the real execGit calls run with an isolated git environment (see helpers/isolated-git.cjs),
+ * and the three RELEASE_* switches are reset to their defaults for every test and restored afterwards.
  * The require.main CLI block cannot be reached in-process.
  */
 
@@ -14,7 +16,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+const { isolatedGitEnv, runGit } = require('./helpers/isolated-git.cjs');
 
 const SCRIPT = path.join(__dirname, '..', 'sub-skills/multi-package-release/scripts/validate-package-group.js');
 const GroupValidator = require(SCRIPT);
@@ -29,19 +31,22 @@ function tmpDir() {
   return dir;
 }
 
+// Temporary HOME and empty template directory shared by every fixture repository in this file.
+const gitHome = path.join(tmpRoot, 'git-home');
+fs.mkdirSync(path.join(gitHome, 'empty-template'), { recursive: true });
+
 function git(cwd, args) {
-  return execFileSync('git', ['-c', 'user.name=T', '-c', 'user.email=t@example.com', '-c',
-    'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8', stdio: 'pipe' });
+  return runGit(args, cwd, gitHome);
 }
 
 function makeRepo(branch, files) {
   const dir = tmpDir();
-  git(dir, ['init', '-b', branch]);
+  git(dir, ['init', '-q', '-b', branch, `--template=${path.join(gitHome, 'empty-template')}`]);
   for (const [name, content] of Object.entries(files)) {
     fs.writeFileSync(path.join(dir, name), content);
   }
   git(dir, ['add', '-A']);
-  git(dir, ['commit', '-m', 'init']);
+  git(dir, ['commit', '-q', '-m', 'init']);
   return dir;
 }
 
@@ -69,8 +74,16 @@ function output() {
   return logSpy.mock.calls.map(c => c.join(' ')).join('\n');
 }
 
+// Release switches the script reads from the environment, with the defaults the tests assume.
+const RELEASE_SWITCHES = ['RELEASE_VALIDATE_STRICT', 'RELEASE_VALIDATE_DEPS', 'RELEASE_CHECK_BREAKING'];
+
 beforeEach(() => {
   logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  // Unset the switches so a configured developer shell cannot change the defaults under test.
+  RELEASE_SWITCHES.forEach((name) => vi.stubEnv(name, undefined));
+  // Drop the caller's git variables and use an isolated configuration for the real execGit calls.
+  Object.keys(process.env).filter((name) => name.startsWith('GIT_')).forEach((name) => vi.stubEnv(name, undefined));
+  Object.entries(isolatedGitEnv(gitHome)).forEach(([name, value]) => vi.stubEnv(name, value));
 });
 
 afterEach(() => {
@@ -402,6 +415,28 @@ describe('validatePackageRepository', () => {
     v.validatePackageRepository({ id: 'a', path: path.join(tmpRoot, 'does-not-exist') });
     assert.strictEqual(v.warnings.length, 1);
     assert.match(v.warnings[0], /Package a: could not check repository: Git command failed: git status --porcelain/);
+  });
+});
+
+describe('ambient environment', () => {
+  test('the release switches start unset and the defaults hold in every test', () => {
+    RELEASE_SWITCHES.forEach((name) => assert.strictEqual(process.env[name], undefined, `${name} leaked in`));
+    const v = new GroupValidator();
+    assert.deepStrictEqual([v.strict, v.validateDeps, v.checkBreaking], [false, true, false]);
+  });
+
+  test('a hostile GIT_DIR and GIT_WORK_TREE never reach the fixtures or the caller repository', () => {
+    const decoy = tmpDir();
+    git(decoy, ['init', '-q', `--template=${path.join(gitHome, 'empty-template')}`]);
+    const before = git(decoy, ['count-objects', '-v']) + git(decoy, ['for-each-ref']);
+    vi.stubEnv('GIT_DIR', path.join(decoy, '.git'));
+    vi.stubEnv('GIT_WORK_TREE', decoy);
+    vi.stubEnv('GIT_INDEX_FILE', path.join(decoy, '.git', 'index'));
+    const fixture = makeRepo('main', { 'a.php': 'x' });
+    const after = git(decoy, ['count-objects', '-v']) + git(decoy, ['for-each-ref']);
+    assert.strictEqual(after, before);
+    assert.ok(fs.existsSync(path.join(fixture, '.git')));
+    assert.strictEqual(git(fixture, ['rev-parse', '--show-toplevel']).trim(), fs.realpathSync(fixture));
   });
 });
 

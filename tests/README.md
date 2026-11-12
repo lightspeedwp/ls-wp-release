@@ -22,14 +22,18 @@ This directory contains test configurations and examples for release skill valid
 | `release-notes-parse-format.inprocess.test.cjs` | `parse-changelog.js` and `format-release-notes.js`, in-process |
 | `extract-contributors.inprocess.test.cjs` | `extract-contributors.js`, in-process |
 
-The `*.inprocess.test.cjs` files (listed below) load each real script with `require()`, so V8
+The `*.inprocess.test.cjs` files (listed above) load each real script with `require()`, so V8
 coverage can see it. The older files run copies of the scripts as subprocesses, which V8
 cannot see, so they check behaviour but add no coverage.
 
-They use temporary fixtures and need `npm install` (Node 22.12 or newer, for Vitest) but no
-network. `npm test` reports coverage (text, `json-summary` and `lcov` in `coverage/`) and
-fails if global statements, branches, functions or lines fall below **80%**. That is the
-agreed starting point; raise it toward 90% in `vitest.config.ts` as the tests improve.
+They use temporary fixtures and need `npm install` (Node 22.12 or newer 22.x, 24.x or 26+, the range
+Vitest supports) but no network. `npm test` reports coverage (text, `json-summary` and `lcov` in
+`coverage/`) and fails if global statements, branches, functions or lines fall below **80%**. That is
+the agreed starting point; raise it toward 90% in `vitest.config.ts` as the tests improve.
+
+Tests that run git use `helpers/isolated-git.cjs`, which clears the caller's `GIT_*` variables, uses a
+temporary HOME and turns off hooks and signing, so a fixture can never touch your own repository.
+
 Everything below this section is **reference material for a downstream plugin or theme
 project** being released. The Jest, PHPUnit, Playwright, coverage and hook examples are
 not configured or run in this repository.

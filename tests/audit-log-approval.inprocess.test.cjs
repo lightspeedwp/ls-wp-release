@@ -645,6 +645,8 @@ describe('CLI main()', () => {
       throw new Error(`EXIT:${code}`);
     });
     process.argv = ['node', SCRIPT, ...args];
+    // A caller's AUDIT_DIR must not leak into a run that does not set it.
+    delete process.env.AUDIT_DIR;
     Object.assign(process.env, env);
     let code = 0;
     try {
