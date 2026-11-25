@@ -461,9 +461,27 @@ Investigation steps:
 Fix:
   1. Identify the source: VERSION file is the source of truth
   2. Update all others to match: plugin.php, style.css, readme.txt
-  3. Commit: git add -A && git commit -m "chore: sync versions to 1.2.4"
+  3. Commit: git add <the files you edited> && git commit -m "chore: sync versions to 1.2.4"
   4. Retry: /release-qa
 ```
+
+## Source Pack Notes
+
+The `lightspeed-release-ops` plugin pack (`lightspeedwp/.github`, `plugins/lightspeed-release-ops`, commit
+`47aee07`, GPL-3.0) has three stub skills that overlap with this one. Each stub is a heading and one sentence.
+Their descriptions are recorded here so nothing is lost:
+
+- `lightspeed-release-readiness`: "Runs structured release-readiness checks for versioning, changelog completeness,
+  and deployment safety." This skill covers the versioning and changelog checks (Gates 3 and 4). It does not cover
+  deployment safety.
+- `lightspeed-release-risk-assessment`: "assess release risk signals and recommend mitigations before cutover."
+  This skill produces a risk score and approval rules (see Release Risk Assessment). It does not recommend
+  mitigations.
+- `lightspeed-release-rollout-checklist`: "build release rollout checklists aligned with release policy and
+  deployment controls." This skill generates a pre-release checklist (see Pre-Release Checklist). It does not cover
+  deployment controls.
+
+See [the review](../../docs/RELEASE_OPS_SKILLS_REVIEW.md) for the full comparison.
 
 ## See Also
 

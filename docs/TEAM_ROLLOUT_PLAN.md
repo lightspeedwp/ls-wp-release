@@ -134,9 +134,9 @@ All notable changes to this project will be documented in this file.
 
 4. Add `.lefthook-local.yml` to .gitignore
 
-5. Run setup check:
+5. Run a read-only check:
 ```bash
-/release --validate-setup
+/release --dry-run
 ```
 
 ### Thursday: Team Training Session
@@ -164,7 +164,7 @@ All notable changes to this project will be documented in this file.
 **Topic:** How to use the skill for your first release
 
 **Content:**
-- Reading help: `/release --help`
+- Reading the skill docs: [SKILL.md](../SKILL.md) (scope parameters and guardrails)
 - Dry run mode: `/release --dry-run`
 - Real release flow
 - Handling release notes
@@ -190,7 +190,7 @@ All notable changes to this project will be documented in this file.
 - [ ] CHANGELOG.md in Keep a Changelog format
 - [ ] .lefthook.yml configured
 - [ ] lefthook install runs without errors
-- [ ] /release --validate-setup passes
+- [ ] /release --dry-run passes
 - [ ] Pre-commit hooks fire on test commit
 - [ ] Documentation added to project README
 - [ ] Team trained on release workflow
@@ -199,14 +199,14 @@ All notable changes to this project will be documented in this file.
 
 Run on each project:
 ```bash
-/release --validate-setup --verbose
+/release --dry-run
 ```
 
 **Output should show:**
-- All hooks installed ✓
-- Version file readable ✓
+- Pre-release checklist with no blockers
+- Version file readable and aligned ✓
 - Changelog valid ✓
-- Configuration complete ✓
+- Hooks are checked separately: `lefthook install` runs without errors
 
 **Report to:** #release-skill channel
 
@@ -257,9 +257,9 @@ cd /path/to/plugin-or-theme
 **For each project type:**
 
 **Plugin teams:**
-- Feature: Run /release --dry-run --type minor
-- Bug fix: Run /release --dry-run --type patch
-- Breaking change: Run /release --dry-run --type major
+- Feature: Run /release --scope=minor --dry-run
+- Bug fix: Run /release --scope=patch --dry-run
+- Breaking change: Run /release --scope=major --dry-run
 
 **Theme teams:**
 - Same workflow as plugins
@@ -409,8 +409,8 @@ For next **real** release, draft release notes:
 □ Security scan clean
 □ Team communication sent
 
-□ Run: /release --validate-release
-  (checks all above)
+□ Run: /release --dry-run
+  (read-only checks of the technical items above)
 
 □ Final go/no-go decision
 ```
@@ -418,14 +418,13 @@ For next **real** release, draft release notes:
 #### Execute Release
 
 ```bash
-# Step 1: Create release
-/release --type patch --version 2.5.1
+# Step 1: Review the plan first (read-only)
+/release --scope=patch --version=2.5.1 --dry-run
 
-# Step 2: Review release details
-/release --show-details
+# Step 2: Create release
+/release --scope=patch --version=2.5.1
 
-# Step 3: Confirm and proceed
-/release --confirm
+# Step 3: Confirm each step when the agent pauses and asks
 
 # Step 4: Monitor release process
 # - Git branch creation
@@ -435,7 +434,7 @@ For next **real** release, draft release notes:
 # - Push to repository
 
 # Step 5: Post-release
-/release --post-release-check
+/release --verify --version=2.5.1
 ```
 
 #### Document Findings
@@ -753,7 +752,7 @@ cat VERSION  # verify content
 2. Fix the identified issue
 3. Run tests locally
 4. Retry push
-**Support:** Run `/release --help` for options
+**Support:** See [SKILL.md](../SKILL.md) for the available options
 
 #### Issue: Release blocked by hook
 **Cause:** Validation caught a real problem  
@@ -1031,20 +1030,20 @@ PRE-RELEASE
 □ README updated
 
 VALIDATION
-□ Run: /release --validate-release
+□ Run: /release --dry-run
 □ Fix any issues
 □ Run again until passing
 
 RELEASE
 □ Team approval obtained
 □ Support person assigned as observer
-□ Run: /release --show-details
+□ Run: /release --scope=[patch|minor|major] --dry-run
 □ Review output carefully
-□ Run: /release --confirm
+□ Run: /release --scope=[patch|minor|major] and confirm each step when the agent asks
 □ Monitor progress
 
 POST-RELEASE
-□ Run: /release --post-release-check
+□ Run: /release --verify --version=[released-version]
 □ Verify version bumped everywhere
 □ Verify tag created
 □ Verify changelog updated
@@ -1176,7 +1175,7 @@ Your feedback directly shapes how this tool evolves.
 
 □ Run: lefthook install
 
-□ Run: /release --validate-setup
+□ Run: /release --dry-run
 
 □ Add documentation to project README
 

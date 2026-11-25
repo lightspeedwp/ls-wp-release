@@ -685,6 +685,18 @@ For social media and newsletter:
 7. **Mention Contributors** — Give credit to your community
 8. **Version Consistently** — Use SemVer for all versions
 
+## Source Pack Notes
+
+The `lightspeed-release-ops` plugin pack (`lightspeedwp/.github`, `plugins/lightspeed-release-ops`, commit
+`47aee07`, GPL-3.0) has a stub skill that overlaps with this one. The stub is a heading and one sentence. Its
+description is recorded here so nothing is lost:
+
+- `lightspeed-release-notes-generator`: "generate structured release notes from validated changelog and repository
+  signals." This skill already covers it in full: it generates release notes from the changelog and the commit
+  history in several output formats.
+
+See [the review](../../docs/RELEASE_OPS_SKILLS_REVIEW.md) for the full comparison.
+
 ## Version History
 
 - **1.0.0** (2026-10-30) — Initial release
