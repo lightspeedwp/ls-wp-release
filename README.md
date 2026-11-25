@@ -71,13 +71,14 @@ release/
 ├── SKILL.md                           # Main skill definition
 ├── agents/
 │   └── release-agent.md               # Agent instructions
-├── skills/
+├── sub-skills/                        # 12 bundled sub-skills (core three shown)
 │   ├── github-release/
 │   │   └── SKILL.md                   # GitHub tag and release publishing
 │   ├── release-qa/
 │   │   └── SKILL.md                   # Quality gates and validation
-│   └── release-handoff-generator/
-│       └── SKILL.md                   # Post-release documentation
+│   ├── release-handoff-generator/
+│   │   └── SKILL.md                   # Post-release documentation
+│   └── ...                            # see sub-skills/README.md
 ├── prompts/
 │   ├── release.prompt.md              # Release orchestration prompt
 │   └── changelog.prompt.md            # Changelog entry guidelines
@@ -267,11 +268,14 @@ After release is published, the skill generates:
 
 ### Tests Failing
 
+Run the test command of the plugin or theme being released, and fix the failures it reports:
+
 ```bash
-npm test                    # Run tests with verbose output
-npm test -- --watch        # Run in watch mode and fix issues
-npm test -- --updateSnapshot  # Update snapshots if intentional
+npm test                    # Or the project's own test command (composer test, etc.)
 ```
+
+Extra flags (watch mode, snapshots, coverage) depend on that project's test runner.
+In this skill repository, `npm test` runs only the validator fixture tests.
 
 ### Version Mismatch
 
@@ -344,17 +348,17 @@ This skill consists of three coordinated sub-skills:
 ### github-release
 Handles git tagging, GitHub Release publishing, and asset generation.
 
-See: `skills/github-release/SKILL.md`
+See: `sub-skills/github-release/SKILL.md`
 
 ### release-qa
 Performs seven quality gates and produces risk assessment.
 
-See: `skills/release-qa/SKILL.md`
+See: `sub-skills/release-qa/SKILL.md`
 
 ### release-handoff-generator
 Creates post-release documentation and audit trail.
 
-See: `skills/release-handoff-generator/SKILL.md`
+See: `sub-skills/release-handoff-generator/SKILL.md`
 
 ## Agents
 
@@ -375,9 +379,9 @@ Guidelines for writing user-facing changelog entries and Keep a Changelog format
 
 - [SKILL.md](./SKILL.md) — Full skill specification
 - [Release Agent](./agents/release-agent.md) — Agent instructions
-- [GitHub Release Skill](./skills/github-release/SKILL.md)
-- [Release QA Skill](./skills/release-qa/SKILL.md)
-- [Release Handoff Skill](./skills/release-handoff-generator/SKILL.md)
+- [GitHub Release Skill](./sub-skills/github-release/SKILL.md)
+- [Release QA Skill](./sub-skills/release-qa/SKILL.md)
+- [Release Handoff Skill](./sub-skills/release-handoff-generator/SKILL.md)
 - [Semantic Versioning](https://semver.org/)
 - [Keep a Changelog](https://keepachangelog.com/)
 - [WordPress Plugin Guidelines](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/)

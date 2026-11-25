@@ -2,7 +2,8 @@
 
 /**
  * Link Validation Script
- * Checks for broken internal and external links in markdown files
+ * Checks that relative file links in markdown files resolve to existing files.
+ * Network-free: http(s) links and #anchors are counted but not checked.
  */
 
 const fs = require('fs');
@@ -78,6 +79,8 @@ const markdownFiles = getMarkdownFiles(baseDir);
 
 let totalLinks = 0;
 let brokenLinks = 0;
+let externalNotChecked = 0;
+let anchorsNotChecked = 0;
 
 markdownFiles.forEach((file) => {
   const content = fs.readFileSync(file, 'utf8');
@@ -94,6 +97,13 @@ markdownFiles.forEach((file) => {
     totalLinks++;
 
     const validation = validateInternalLink(link.url, path.dirname(file));
+
+    // External targets and #fragments are never resolved by this script
+    if (validation.type === 'external') {
+      externalNotChecked++;
+    } else if (link.url.includes('#')) {
+      anchorsNotChecked++;
+    }
 
     if (validation.valid) {
       const typeIcon = {
@@ -115,11 +125,13 @@ markdownFiles.forEach((file) => {
 console.log(`\n📊 Summary:`);
 console.log(`   Total links: ${totalLinks}`);
 console.log(`   Broken links: ${brokenLinks}`);
+console.log(`   External links not checked: ${externalNotChecked}`);
+console.log(`   Anchors not checked: ${anchorsNotChecked}`);
 
 if (brokenLinks > 0) {
   console.error('\n❌ Link validation failed');
   process.exit(1);
 } else {
-  console.log('\n✅ All links are valid');
+  console.log('\n✅ All internal file links resolve (external links and anchors were not checked)');
   process.exit(0);
 }

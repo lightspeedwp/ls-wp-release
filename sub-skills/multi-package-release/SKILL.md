@@ -1,5 +1,5 @@
 ---
-skill_name: multi-package-release
+name: multi-package-release
 title: Multi-Package Release Orchestrator
 description: Coordinate synchronized releases of plugin + theme packages with version alignment, dependency validation, and unified release notes
 tags: [wordpress, release, plugin, theme, coordination, orchestration]

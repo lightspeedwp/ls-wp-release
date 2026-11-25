@@ -1,3 +1,8 @@
+---
+name: release-approval-workflow
+description: Multi-level review and approval gates before release execution. Enforces security, quality, and compliance reviews with role-based approvals, audit logging, and evidence collection for enterprise WordPress plugin and theme releases.
+---
+
 # Release Approval Workflow
 
 **Name:** `release-approval-workflow`
