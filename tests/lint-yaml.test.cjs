@@ -4,7 +4,6 @@
 // The script string is run directly with `sh -c` against a mock `yamllint`
 // on an otherwise empty PATH, so no real yamllint, npm install or network is needed.
 
-const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -48,8 +47,7 @@ function run({ mock, yamlFiles = ['.lefthook.yml'] }) {
   });
 }
 
-// process.on('exit') keeps this compatible with Node 18.0 (node:test after() needs 18.8).
-process.on('exit', () => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
+afterAll(() => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
 
 test('missing yamllint fails and says YAML lint was not run', () => {
   const result = run({ mock: undefined });

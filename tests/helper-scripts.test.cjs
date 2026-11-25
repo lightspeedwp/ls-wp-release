@@ -2,9 +2,8 @@
 
 // Fixture tests for the sub-skill helper scripts: read-only use must not write,
 // --output must stay inside the working directory, and git arguments must never
-// reach a shell. Everything runs in temporary directories using Node's built-in runner.
+// reach a shell. Everything runs in temporary directories using Vitest.
 
-const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -44,8 +43,7 @@ function snapshot(dir, base = dir) {
     .sort();
 }
 
-// process.on('exit') keeps this compatible with Node 18.0 (node:test after() needs 18.8).
-process.on('exit', () => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
+afterAll(() => tempDirs.forEach((dir) => fs.rmSync(dir, { recursive: true, force: true })));
 
 // --- audit-log-approval.js -------------------------------------------------
 

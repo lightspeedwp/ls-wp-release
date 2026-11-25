@@ -4,6 +4,9 @@ package-lock.json
 composer.lock
 yarn.lock
 
+# Test coverage output
+coverage/
+
 # macOS
 .DS_Store
 .AppleDouble
