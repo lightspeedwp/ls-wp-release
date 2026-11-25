@@ -338,8 +338,9 @@ This skill is documentation-based. `npm test` runs Vitest (`vitest run --coverag
 `tests/*.test.cjs`, which covers only the repository's own validators (JSON, links, skill
 structure and the `lint:yaml` script) and three helper scripts against temporary fixtures.
 It does not test the release workflow. Coverage is reported (text, `json-summary` and
-`lcov` in `coverage/`) but no threshold is enforced yet. Most scripts run as subprocesses
-in the tests, so the reported coverage is low.
+`lcov` in `coverage/`) and `npm test` fails below 80% global coverage (statements, branches,
+functions and lines). The `*.inprocess.test.cjs` files load the real scripts so coverage
+counts them. Raise the threshold toward 90% in `vitest.config.ts` over time.
 
 Validation is done through:
 
