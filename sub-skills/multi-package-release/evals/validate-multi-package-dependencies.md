@@ -3,6 +3,9 @@
 ## Scenario
 Verify cross-package version compatibility before releasing. Test both passing and failing validation scenarios.
 
+> **Note:** the `lspeed` command used in this test case is not included in this repository. Treat its commands
+> and outputs as illustrative of the intended workflow, not as something you can run today.
+
 ## Setup
 
 ### Release Config

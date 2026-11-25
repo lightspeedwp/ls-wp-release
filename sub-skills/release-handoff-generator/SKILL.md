@@ -25,6 +25,7 @@ This sub-skill creates:
 3. **Next-Cycle Plan** — Recommendations for development starting point
 4. **Contributor Credits** — Recognition in release notes and changelog
 5. **Follow-Up Issues** — Suggestions for post-release work
+6. **Changelog Agent Handoff** — The four inputs the changelog agent (`ls-wp-changelog`) needs
 
 ## Outputs Generated
 
@@ -443,6 +444,35 @@ Thank you to all who reported issues, tested code, and provided feedback!
   ]
 }
 ```
+
+### 6. Changelog Agent Handoff
+
+**When:** only when the release is evidenced complete: the release PR is merged, the tag is pushed and the
+GitHub Release is published. Do not infer completion.
+
+**Contract:** the handoff to `ls-wp-changelog` carries four inputs.
+
+```text
+Changelog agent handoff (example values)
+- version: 1.2.4
+- release issue: the issue that tracked the release (ID or URL)
+- PR list: links to the PRs included in the release
+- changelog path: CHANGELOG.md
+```
+
+| Input | What it holds |
+| ----- | ------------- |
+| `version` | The released version, `X.Y.Z` |
+| `releaseIssue` | The issue that tracked the release (issue ID or URL) |
+| `prList` | The pull requests included in the release (links) |
+| `changelogPath` | The changelog file that holds the `## [X.Y.Z]` section |
+
+**Rules:**
+
+- If an input is not known, write "unknown" and say why. Never invent an issue, a PR or a path.
+- The handoff does not publish, tag or release anything.
+- How the handoff is delivered is not defined here; this section defines only its four inputs.
+- What the changelog agent does with it is defined in the `ls-wp-changelog` repository.
 
 ## Integration
 

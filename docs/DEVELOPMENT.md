@@ -322,6 +322,15 @@ metadata:
 ...
 ```
 
+### Scripts
+
+- Write any new script in TypeScript.
+- Do not add shell (`.sh`) scripts.
+- Existing JavaScript scripts stay as they are. Converting them is a separate decision, not part of this rule.
+- TypeScript tooling is not set up in this repository yet.
+
+See [scripts/README.md](../scripts/README.md) for the existing scripts.
+
 ## Testing
 
 This skill is documentation-based. `npm test` runs `node --test tests/*.test.cjs`, which

@@ -20,7 +20,7 @@ You are orchestrating a release for a WordPress block plugin or block theme. You
 3. Enforce Keep a Changelog format and completeness
 4. Create git tags and GitHub Releases with proper metadata
 5. Prepare WordPress.org-ready packages and documentation
-6. Generate post-release handoff and audit documentation
+6. Generate post-release handoff and audit documentation, including the handoff to the changelog agent
 
 ## Project Type Detection
 
@@ -379,8 +379,15 @@ git checkout -b release/v1.2.4 develop
 
 ### Commit Changes
 
+Stage only the files this release changed, by name. Do not use wildcards such as `*.php`, and do not use
+`git add -A` or `git add .`. Check `git status --short` first and stage only files that exist and changed.
+
 ```bash
-git add VERSION *.php style.css readme.txt package.json composer.json CHANGELOG.md
+git status --short
+git add VERSION CHANGELOG.md readme.txt
+git add plugin.php        # plugins: the main plugin file that holds the Version: header
+git add style.css         # themes: the file that holds the Version: header
+git add package.json composer.json   # only if this release bumped them
 git commit -m "release: v1.2.4
 
 - Updated VERSION to 1.2.4
@@ -437,6 +444,9 @@ tags/1.2.4/
 ```
 
 ### For Themes
+
+> **Unverified:** this theme SVN structure has not been checked against current WordPress.org theme directory
+> documentation. Confirm it before you rely on it.
 
 ```
 SVN structure to prepare:
@@ -498,7 +508,8 @@ Thanks to:
 ### Verify Your Download
 
 ```bash
-sha256sum -c plugin-name-v1.2.4.zip.sha256
+sha256sum -c plugin-name-v1.2.4.zip.sha256        # Linux
+shasum -a 256 -c plugin-name-v1.2.4.zip.sha256    # macOS
 ```
 
 ### Download
@@ -525,7 +536,24 @@ After GitHub Release is published:
 8. [ ] Log release in audit trail
 9. [ ] Plan next development cycle
 10. [ ] Sync develop with main if needed
+11. [ ] Hand off to the changelog agent (see below)
 ```
+
+## Changelog Agent Handoff
+
+Send this only when the release is evidenced complete: the release PR is merged, the tag is pushed and the
+GitHub Release is published. Do not infer completion. Hand off to `ls-wp-changelog` with four inputs:
+
+- `version`: the released version, for example `1.2.4`
+- `releaseIssue`: the issue that tracked the release (ID or URL)
+- `prList`: links to the PRs included in the release
+- `changelogPath`: the changelog file that holds the new version section, for example `CHANGELOG.md`
+
+Rules:
+
+- If an input is not known, write "unknown" and say why. Never invent an issue, a PR or a path.
+- The handoff does not publish, tag or release anything.
+- What the changelog agent does with it is defined in the `ls-wp-changelog` repository.
 
 ## Error Messages & Recovery
 
@@ -567,7 +595,7 @@ Fix:
   1. Run: npm test -- --verbose
   2. Fix failing tests
   3. Run: npm test (verify all pass)
-  4. git add . && git commit -m "fix: failing tests"
+  4. git add path/to/each-fixed-file && git commit -m "fix: failing tests"
   5. Retry release
 ```
 

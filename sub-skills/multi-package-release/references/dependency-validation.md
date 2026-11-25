@@ -2,6 +2,10 @@
 
 Comprehensive guide to defining, validating, and troubleshooting cross-package dependencies.
 
+> **Note:** the `lspeed` command used in the examples below is not included in this repository. Treat those
+> commands as illustrative of the intended workflow, not as something you can run today. The scripts in
+> `scripts/` (`validate-package-group.js`, `check-cross-dependencies.js`) are the parts that exist.
+
 ## Overview
 
 Cross-package dependencies ensure that when packages release together, they're compatible and ready to work together. This document covers:
