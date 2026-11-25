@@ -1,0 +1,52 @@
+name: CI
+
+# Gives dependency PRs (Renovate, Dependabot) a real check. Install and JSON
+# validation block; the content checks fail on main today and are advisory
+# until the documentation is cleaned up.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Install and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Validate JSON
+        run: npm run lint:json
+
+      - name: Lint Markdown (advisory)
+        continue-on-error: true
+        run: npm run lint:markdown
+
+      - name: Validate skill structure (advisory)
+        continue-on-error: true
+        run: npm run validate:structure
+
+      - name: Validate links (advisory)
+        continue-on-error: true
+        run: npm run validate:links
