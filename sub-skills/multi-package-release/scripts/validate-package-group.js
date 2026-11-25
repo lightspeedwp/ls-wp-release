@@ -17,7 +17,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 class GroupValidator {
   constructor(options = {}) {
@@ -390,9 +390,10 @@ class GroupValidator {
    * Execute git command in package directory
    */
   execGit(args, cwd = '.') {
+    // Arguments are passed as an argv array, never through a shell
     const cmd = ['git', ...args].join(' ');
     try {
-      return execSync(cmd, { cwd, encoding: 'utf8' });
+      return execFileSync('git', args, { cwd, encoding: 'utf8' });
     } catch (err) {
       throw new Error(`Git command failed: ${cmd}`);
     }

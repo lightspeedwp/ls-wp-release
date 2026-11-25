@@ -191,8 +191,11 @@ coverage/
 ### Asset Management
 
 **Plugin Assets**
+
+Plugin assets live in a top-level `assets/` directory beside `trunk/`, not inside it.
+
 ```
-trunk/assets/
+assets/
 ├── icon-128x128.{png|jpg}      (required: minimum 128×128px)
 ├── icon-256x256.{png|jpg}      (recommended: for high-DPI)
 ├── banner-772x250.{jpg|png}    (recommended: plugin header banner)
@@ -537,7 +540,7 @@ grep -r "1.0.0" /path/to/plugin/
 4. SVN add didn't register (svn status should show "A")
 
 # Fix:
-svn add trunk/assets/banner-772x250.jpg
+svn add assets/banner-772x250.jpg
 svn commit -m "Add plugin banner"
 # Wait up to 1 hour for WordPress.org to regenerate
 ```

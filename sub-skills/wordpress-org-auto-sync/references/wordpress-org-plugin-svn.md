@@ -6,7 +6,7 @@ Complete reference for plugin SVN structure, file organization, and publishing r
 
 - **URL Pattern:** `https://plugins.svn.wordpress.org/{slug}/`
 - **Type:** Apache Subversion (SVN)
-- **Structure:** trunk/, tags/, branches/
+- **Structure:** assets/, trunk/, tags/, branches/ (all at the repository root; `assets/` is not inside `trunk/`)
 - **Initial Setup:** After plugin approval at WordPress.org
 - **Credentials:** WordPress.org account with plugin commit access
 
@@ -14,6 +14,15 @@ Complete reference for plugin SVN structure, file organization, and publishing r
 
 ```
 block-hero/                          (repository root)
+├── assets/                          (WordPress.org listing images; beside trunk/, never inside it)
+│   ├── icon-128x128.png            (128×128 minimum)
+│   ├── icon-256x256.png            (256×256 recommended)
+│   ├── banner-772x250.jpg          (772×250 header banner)
+│   ├── screenshot-1.png            (540×400 minimum)
+│   ├── screenshot-2.png            (feature showcase)
+│   ├── screenshot-3.png
+│   └── screenshot-4.png
+│
 ├── trunk/                           (development version)
 │   ├── block-hero.php              (main plugin file, required)
 │   ├── readme.txt                  (WP.org format, required)
@@ -37,15 +46,6 @@ block-hero/                          (repository root)
 │   │   ├── frontend/
 │   │   │   └── shortcodes.php
 │   │   └── class-plugin.php        (main plugin class)
-│   │
-│   ├── assets/                     (WordPress.org special: images & assets)
-│   │   ├── icon-128x128.png       (128×128 minimum)
-│   │   ├── icon-256x256.png       (256×256 recommended)
-│   │   ├── banner-772x250.jpg     (772×250 header banner)
-│   │   ├── screenshot-1.png       (540×400 minimum)
-│   │   ├── screenshot-2.png       (feature showcase)
-│   │   ├── screenshot-3.png
-│   │   └── screenshot-4.png
 │   │
 │   ├── languages/                 (i18n translations)
 │   │   ├── block-hero.pot         (source template)
@@ -250,7 +250,7 @@ See LICENSE file for details.
 
 **128×128 Icon** (minimum, usually primary icon)
 ```
-trunk/assets/icon-128x128.png
+assets/icon-128x128.png
 - Dimensions: 128×128 pixels exactly
 - Format: PNG (recommended) or JPG
 - Background: Transparent PNG preferred
@@ -260,7 +260,7 @@ trunk/assets/icon-128x128.png
 
 **256×256 Icon** (recommended, high-DPI)
 ```
-trunk/assets/icon-256x256.png
+assets/icon-256x256.png
 - Dimensions: 256×256 pixels exactly
 - Format: PNG (recommended) or JPG
 - Background: Transparent PNG preferred
@@ -271,7 +271,7 @@ trunk/assets/icon-256x256.png
 ### Plugin Banner
 
 ```
-trunk/assets/banner-772x250.jpg
+assets/banner-772x250.jpg
 - Dimensions: 772×250 pixels exactly (not approximate)
 - Format: JPG recommended (PNG OK)
 - Design: Clear, high contrast
@@ -283,9 +283,9 @@ trunk/assets/banner-772x250.jpg
 ### Plugin Screenshots
 
 ```
-trunk/assets/screenshot-1.png
-trunk/assets/screenshot-2.png
-trunk/assets/screenshot-3.png  (up to 10 total)
+assets/screenshot-1.png
+assets/screenshot-2.png
+assets/screenshot-3.png  (up to 10 total)
 
 - Dimensions: 540×400 minimum (larger OK, will be scaled)
 - Format: PNG or JPG
@@ -405,19 +405,19 @@ Stable tag updated to X.Y.Z
 svn checkout https://plugins.svn.wordpress.org/block-hero/ block-hero-svn
 cd block-hero-svn
 ls -la
-# Should show: trunk/ tags/ branches/
+# Should show: assets/ branches/ tags/ trunk/
 
 # 3. Copy plugin files to trunk/
 cp -r ../block-hero-github/* trunk/
 
-# 4. Add assets
-mkdir -p trunk/assets
-cp ../artwork/icon-128x128.png trunk/assets/
-cp ../artwork/banner-772x250.jpg trunk/assets/
-cp ../artwork/screenshot-*.png trunk/assets/
+# 4. Add assets (top-level assets/, beside trunk/)
+mkdir -p assets
+cp ../artwork/icon-128x128.png assets/
+cp ../artwork/banner-772x250.jpg assets/
+cp ../artwork/screenshot-*.png assets/
 
 # 5. Stage all files
-svn add trunk/
+svn add --force trunk/ assets/
 
 # 6. Verify readme.txt stable tag
 cat trunk/readme.txt | grep "Stable tag"

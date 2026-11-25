@@ -23,11 +23,8 @@ class AuditLogApproval {
     this.version = options.version || null;
     this.approvalId = options.approvalId || null;
     this.timestamp = options.timestamp || new Date().toISOString();
-
-    // Ensure audit directory exists
-    if (!fs.existsSync(this.auditDir)) {
-      fs.mkdirSync(this.auditDir, { recursive: true });
-    }
+    // The audit directory is created on the first write (see writeAuditLog),
+    // so read-only commands (--report, --export, --verify) never touch the filesystem.
   }
 
   /**
@@ -163,6 +160,9 @@ class AuditLogApproval {
     const filename = `audit-${entry.version}-${entry.approval_id || 'unknown'}.jsonl`;
     const filepath = path.join(this.auditDir, filename);
 
+    // Create the audit directory only when something is actually being written
+    fs.mkdirSync(this.auditDir, { recursive: true });
+
     // Append to JSONL file (JSON Lines format - one entry per line)
     const line = JSON.stringify(entry) + '\n';
     fs.appendFileSync(filepath, line);
@@ -269,6 +269,11 @@ class AuditLogApproval {
   readAuditTrail(version) {
     const filename = `audit-${version}-*.jsonl`;
     const filepath = path.join(this.auditDir, filename.replace('*', ''));
+
+    // No audit directory means no trail yet; reading must not create it
+    if (!fs.existsSync(this.auditDir)) {
+      return [];
+    }
 
     // Find matching files
     const dir = fs.readdirSync(this.auditDir);

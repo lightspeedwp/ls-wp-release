@@ -272,6 +272,11 @@ RELEASE_VALIDATE_DEPS=true      # Validate dependencies
 
 ## Usage Workflow
 
+> **Note:** the `lspeed` command used in the examples below is not included in this
+> repository. Treat those commands as illustrative of the intended workflow, not as
+> something you can run today. The scripts in `scripts/` (`validate-package-group.js`,
+> `check-cross-dependencies.js`) are the parts that exist.
+
 ### Step 1: Prepare Release Group
 ```bash
 lspeed release --group blocks-and-theme --prepare
